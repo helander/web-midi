@@ -8,16 +8,30 @@
 
   <h1>CC Slider</h1>
 
-    <cc-vslider channel="0" cc="70"></cc-vslider>
+    <cc-vslider step="apa,bepa,cepa" channel="0" cc="70"></cc-vslider>
 
     <script type="module">
       import './cc-vslider.js';
     </script>
 
-<cc-hslider channel="0" cc="71"></cc-hslider>
+<cc-hslider channel="0" cc="71" step="kalle,olle,pelle"></cc-hslider>
 
 <script type="module">
   import './cc-hslider.js';
+</script>
+
+
+<cc-step-button channel="0" cc="75" step="Low,Mid,High"></cc-step-button>
+
+<style>
+  cc-step-button button {
+    --first-step-color: #e91e63;
+    --other-step-color: #03a9f4;
+  }
+</style>
+
+<script type="module">
+  import './cc-step-button.js';
 </script>
 
 

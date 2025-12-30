@@ -1,50 +1,68 @@
 <style>
-  :host {
-    display: inline-block;
-    height: 200px;
-    width: 24px;
-    user-select: none;
-    touch-action: none;
-  }
+:host {
+  display: inline-block;
+  height: 200px;
+  width: 80px; /* enough space for track + labels */
+  user-select: none;
+  touch-action: none;
+  position: relative;
+}
 
-  .track {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    background: #ccc;
-  }
+.container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
 
-  .track-low,
-  .track-high {
-    position: absolute;
-    left: 0;
-    width: 100%;
-  }
+.track {
+  position: absolute;
+  left: 30px; /* centered in host, leave space for labels */
+  width: 20px;
+  height: 100%;
+  background: #ccc;
+}
 
-  .track-low {
-    bottom: 0;
-    background: #4caf50;
-  }
+.track-low,
+.track-high {
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
 
-  .track-high {
-    top: 0;
-    background: #ddd;
-  }
+.track-low {
+  bottom: 0;
+  background: #4caf50;
+}
 
-  .thumb {
-    position: absolute;
-    left: 2px;
-    width: 20px;
-    height: 12px;
-    background: #2196f3;
-    border-radius: 6px;
-    transform: translateY(50%);
-    cursor: pointer;
-  }
+.track-high {
+  top: 0;
+  background: #ddd;
+}
+
+.thumb {
+  position: absolute;
+  width: 20px;
+  height: 12px;
+  background: #2196f3;
+  border-radius: 6px;
+  cursor: pointer;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.label {
+  position: absolute;
+  left: 100%; /* step labels right of track */
+  font-size: 0.8em;
+  white-space: nowrap;
+  margin-left: 4px;
+}
 </style>
 
-<div class="track">
-  <div class="track-high"></div>
-  <div class="track-low"></div>
-  <div class="thumb"></div>
+<div class="container">
+  <div class="track">
+    <div class="track-high"></div>
+    <div class="track-low"></div>
+    <div class="thumb"></div>
+  </div>
 </div>

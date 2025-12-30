@@ -1,5 +1,3 @@
-// cc-vslider.js
-
 import { CCValueElement } from './cc-value-element.js';
 
 const template = await fetch(
@@ -14,6 +12,9 @@ class CCVSlider extends CCValueElement {
 
     this._value = 0;
     this._dragging = false;
+
+    this._stopValues = [];
+    this._stopLabels = [];
 
     this._onPointerDown = this._onPointerDown.bind(this);
     this._onPointerMove = this._onPointerMove.bind(this);
@@ -31,6 +32,9 @@ class CCVSlider extends CCValueElement {
     this._track.addEventListener('pointerdown', this._onPointerDown);
     window.addEventListener('pointermove', this._onPointerMove);
     window.addEventListener('pointerup', this._onPointerUp);
+
+    this._parseSteps();
+    this._renderStops();
   }
 
   disconnectedCallback() {
@@ -39,12 +43,59 @@ class CCVSlider extends CCValueElement {
     window.removeEventListener('pointerup', this._onPointerUp);
   }
 
-  /**
-   * Initial GET → position slider
-   */
   onInitialValue(value) {
     this._value = this._clamp(value);
+    if (this._stopValues.length) this._value = this._snapToStop(this._value);
     this._render();
+  }
+
+  _parseSteps() {
+    const attr = this.getAttribute('step');
+    if (!attr) {
+      this._stopLabels = [];
+      this._stopValues = [];
+      return;
+    }
+    const labels = attr.split(',').map(s => s.trim()).filter(Boolean);
+    if (!labels.length) {
+      this._stopLabels = [];
+      this._stopValues = [];
+      return;
+    }
+    this._stopLabels = labels;
+    const n = labels.length;
+    const interval = n > 1 ? 127 / (n - 1) : 0;
+    this._stopValues = labels.map((_, i) => Math.round(i * interval));
+  }
+
+  _renderStops() {
+    // remove old labels
+    const oldLabels = this.shadowRoot.querySelectorAll('.label');
+    oldLabels.forEach(l => l.remove());
+
+    this._stopLabels.forEach((label, i) => {
+      const div = document.createElement('div');
+      div.textContent = label;
+      div.className = 'label';
+
+      const ratio = this._stopValues[i] / 127;
+      div.style.top = `calc(${100 - ratio * 100}% - 0.5em)`; 
+      this.shadowRoot.querySelector('.container').appendChild(div);
+    });
+  }
+
+  _snapToStop(value) {
+    if (!this._stopValues.length) return value;
+    let closest = this._stopValues[0];
+    let minDist = Math.abs(value - closest);
+    for (const v of this._stopValues) {
+      const dist = Math.abs(value - v);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = v;
+      }
+    }
+    return closest;
   }
 
   _onPointerDown(e) {
@@ -61,21 +112,19 @@ class CCVSlider extends CCValueElement {
     this._dragging = false;
   }
 
-_updateFromPointer(e) {
-  const rect = this._track.getBoundingClientRect();
-  const y = e.clientY - rect.top;
-  const ratio = 1 - y / rect.height;
-  const value = Math.round(ratio * 127);
+  _updateFromPointer(e) {
+    const rect = this._track.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    let value = Math.round((1 - y / rect.height) * 127);
+    value = this._clamp(value);
+    value = this._snapToStop(value);
 
-  const clamped = this._clamp(value);
-  if (clamped !== this._value) {
-    this._value = clamped;
-    this._render();
-
-    // Send continuously while moving
-    this.setValue(this._value).catch(console.error);
+    if (value !== this._value) {
+      this._value = value;
+      this._render();
+      this.setValue(this._value).catch(console.error);
+    }
   }
-}
 
   _render() {
     const ratio = this._value / 127;
@@ -87,6 +136,7 @@ _updateFromPointer(e) {
     this._trackLow.style.bottom = '0';
     this._trackHigh.style.top = '0';
 
+    // center thumb on track
     this._thumb.style.bottom = `${percent}%`;
   }
 
